@@ -28,6 +28,10 @@ const userSchema = new Schema({
     minlength: 5,
     maxlength: 50,
   },
+  role: {
+    type: String,
+    required: true,
+  },
 });
 
 userSchema.methods.generateAuthToken = function () {
@@ -43,6 +47,7 @@ function validateUser(user) {
     password: Joi.string().min(5).max(1024).required(),
     firstName: Joi.string().min(5).max(50),
     lastName: Joi.string().min(5).max(50),
+    role: Joi.string().required(),
   });
 
   return schema.validate(user);

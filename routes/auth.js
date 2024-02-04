@@ -9,6 +9,7 @@ const authRouter = express.Router();
 authRouter.use(bodyParser.json());
 
 authRouter.route("/login").post(async (req, res) => {
+  console.log("abcd error");
   const { error } = validateLogin(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -21,7 +22,11 @@ authRouter.route("/login").post(async (req, res) => {
   if (!validPassword) return res.status(400).send("Invalid user or password.");
 
   const token = user.generateAuthToken();
-  return res.status(200).header("x-auth-token", token).send(token);
+  const { email, firstName, lastName, role, _id } = user;
+  return res
+    .status(200)
+    .header("x-auth-token", token)
+    .send({ email, firstName, lastName, role, token, _id });
 });
 
 authRouter.route("/signup").post(async (req, res) => {
@@ -29,20 +34,20 @@ authRouter.route("/signup").post(async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, role } = req.body;
     let user = await Users.findOne({ email: email });
     if (user) return res.status(400).send("User already registered");
 
-    user = new Users({ email, password, firstName, lastName });
+    user = new Users({ email, password, firstName, lastName, role });
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
-    await user.save();
+    const { _id } = await user.save();
 
     const token = user.generateAuthToken();
     res
       .status(201)
       .header("x-auth-token", token)
-      .send({ email, firstName, lastName });
+      .send({ email, firstName, lastName, role, token, _id });
   } catch (error) {
     return res.status(400).send(error.message);
   }
@@ -63,6 +68,7 @@ function validateSignUp(req) {
     password: Joi.string().min(5).max(255).required(),
     firstName: Joi.string().min(5).max(255).required(),
     lastName: Joi.string().min(5).max(255).required(),
+    role: Joi.string().required(),
   });
 
   return schema.validate(req);
