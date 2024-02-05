@@ -4,8 +4,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+const uri =
+  "mongodb+srv://raunakgupta2608:inventoryDB@cluster0.qlfzjfq.mongodb.net/inventoryDB?retryWrites=true&w=majority";
+
 mongoose
-  .connect("mongodb://localhost/inventory", {
+  .connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
